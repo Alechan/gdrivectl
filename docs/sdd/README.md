@@ -5,3 +5,5 @@
 - `0003-v0-1-output-contract-normalization-sdd.md`: Output behavior normalization policy for v0.1 commands.
 - `0004-v0-1-documentation-completion-sdd.md`: Documentation scope and release-readiness requirements.
 - `0005-v0-1-fixture-contract-tests-sdd.md`: Fixture-based contract test requirements for Drive/Docs clients.
+- `0006-codex-claude-skill-intent-sdd.md`: Intent and architecture for a reusable Codex/Claude skill/subagent around `gdrivectl`.
+- `0007-debug-playbook-and-portability-sdd.md`: Debug playbook requirements derived from existing cheatsheet plus portability/accuracy improvements.

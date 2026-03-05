@@ -92,16 +92,37 @@ GDRIVECTL_FILE_ID=<FILE_ID> GDRIVECTL_DOC_ID=<DOC_ID> scripts/smoke_integration.
 
 ### gcloud binary not found
 
+- Check:
+  - `command -v gcloud`
 - Use `--gcloud-bin <absolute_path>`.
 
 ### auth/scope issues
 
+- Check:
+  - `gcloud auth list`
 - Run `gcloud auth login --enable-gdrive-access --update-adc`.
 
 ### timeout/network issues
 
 - Retry with `--timeout 60s`.
 - Verify DNS/connectivity.
+
+### Sandbox/config permission issues
+
+- If gcloud cannot write under `~/.config/gcloud`, retry in a shell with home-config access.
+- Fallback:
+  - `CLOUDSDK_CONFIG=/tmp/gcloud-config gcloud auth list`
+
+### Canonical debug sequence
+
+```bash
+go run ./cmd/gdrivectl --help
+command -v gcloud
+gcloud auth list
+go run ./cmd/gdrivectl doctor --json --gcloud-bin "$(command -v gcloud || echo gcloud)"
+```
+
+See full guide: `docs/DEBUG.md`.
 
 ## SDD-first workflow
 

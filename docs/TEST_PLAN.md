@@ -147,3 +147,30 @@ Optional env overrides:
 - `GDRIVECTL_SEARCH_QUERY`
 - `GDRIVECTL_EXPORT_MIME`
 - `GDRIVECTL_EXPORT_OUT`
+
+## Debug playbook checks
+
+### Canonical sequence
+
+```bash
+go run ./cmd/gdrivectl --help
+command -v gcloud
+gcloud auth list
+go run ./cmd/gdrivectl doctor --json --gcloud-bin "$(command -v gcloud || echo gcloud)"
+```
+
+Expected:
+
+- Command list prints correctly.
+- `gcloud` resolves or a clear config remediation path is provided.
+- `doctor --json` output includes `gcloud_bin`, `gcloud_exists`, `token_ok`, `drive_ok`, `docs_ok`.
+
+### Sandbox fallback
+
+If shell permissions block `~/.config/gcloud` writes, verify:
+
+```bash
+CLOUDSDK_CONFIG=/tmp/gcloud-config gcloud auth list
+```
+
+Then retry `doctor --json`.
