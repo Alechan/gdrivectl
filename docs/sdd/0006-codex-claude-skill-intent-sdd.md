@@ -79,10 +79,15 @@ These must share the same operational contract and command mapping.
   - content export -> `doc-export`
 - FR-4: Skill must include exit-code-aware retry/remediation flow.
 - FR-5: Skill must require explicit user confirmation before destructive or high-impact steps (if future write operations are added).
+- FR-5a: Skill should follow least-privilege-first execution posture where tooling supports sandboxing, and escalate only on deterministic failure criteria.
 - FR-6: Skill must include a persistent-auth-failure branch for constrained/sandboxed execution:
   - if exit code `3` persists after scope re-auth
   - run token diagnostics (`gcloud auth print-access-token`; optional ADC check)
   - recommend escalated/unsandboxed retry when environment blocks token refresh.
+- FR-6a: Skill must include explicit config-store failure handling under exit code `2`:
+  - if error indicates gcloud auth/config store unavailability under sandbox constraints
+  - rerun the same target command unsandboxed/escalated
+  - report the before/after outcomes.
 - FR-7: Skill must report escalation retries explicitly:
   - original command
   - failing exit code/category
@@ -112,6 +117,10 @@ These must share the same operational contract and command mapping.
   - `doctor` and some read commands pass
   - export workflow fails with repeated auth classification due to runtime constraints
   - skill chooses escalation guidance rather than repetitive re-auth loops.
+- V6: Include constrained-environment eval cases where:
+  - command fails with config classification tied to gcloud config-store access
+  - skill escalates from least-privilege mode to unsandboxed retry
+  - final response records both attempts and rationale.
 
 ## 10. Deliverables
 

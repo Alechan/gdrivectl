@@ -53,6 +53,10 @@ This SDD consolidates troubleshooting scenarios and review recommendations gathe
 - If exit `3` persists after re-auth in constrained execution contexts:
   - run `gcloud auth print-access-token` (and optional ADC check)
   - if token refresh still fails due to environment constraints, rerun target command unsandboxed/escalated.
+- If exit `2` indicates config-store/auth-store unavailability in constrained execution contexts:
+  - keep flag/path checks
+  - rerun the same command unsandboxed/escalated
+  - log both attempts for deterministic troubleshooting.
 
 ### 3.4 Sandbox-specific guidance
 
@@ -85,6 +89,7 @@ This SDD consolidates troubleshooting scenarios and review recommendations gathe
 7. If failure code `4`: retry step 5 with `--timeout 60s`.
 8. Then run target command (`search`, `file-meta`, `doc-tabs`, or `doc-export`).
 9. If target command returns repeated exit `3` after re-auth, run unsandboxed/escalated retry and record both attempts.
+10. If target command returns exit `2` with config-store signatures, run unsandboxed/escalated retry and record both attempts.
 
 ## 5. Required documentation updates
 

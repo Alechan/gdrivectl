@@ -41,13 +41,15 @@ Use `--json` by default for structured commands. For `doctor`, prefer `--json` w
 ## Standard flow
 
 1. Confirm task intent and required IDs/filters.
-2. Run command directly if preconditions are known-good.
+2. Run command with least privilege first when sandboxed execution is available.
 3. If command fails and environment is unknown, run `doctor` before retrying.
-4. Apply remediation based on exit code and error category.
+4. If failure indicates sandbox/runtime config-store access constraints, rerun the same command unsandboxed/escalated.
+5. Apply remediation based on exit code and error category.
 
 ## Exit-code remediation
 
 - `2` (`validation/config`): fix flags or `--gcloud-bin` path.
+  - If error indicates gcloud auth/config store unavailability (for example `gcloud auth config store unavailable`, credential/config-store write/read failures), rerun the same `gdrivectl` command with escalated/unsandboxed execution.
 - `3` (`auth/scope`): re-authenticate and ensure Drive scope.
   - Run: `gcloud auth login --enable-gdrive-access --update-adc`
   - If it persists, run: `gcloud auth print-access-token`
@@ -74,3 +76,4 @@ Use `--json` by default for structured commands. For `doctor`, prefer `--json` w
   - failing exit code/category
   - escalated retry command
   - final outcome and output path (for `doc-export`)
+  - why escalation was required (for example config-store access under constrained execution)

@@ -105,6 +105,7 @@ go run ./cmd/gdrivectl doctor --json --gcloud-bin "$(command -v gcloud || echo g
 
 If exit code is:
 
+- `2`: if config/auth-store failures are reported (for example `gcloud auth config store unavailable`), rerun the same command unsandboxed/escalated after basic flag/path checks.
 - `3`: run scope re-auth command and retry.
 - `4`: retry with `--timeout 60s` and verify network.
 

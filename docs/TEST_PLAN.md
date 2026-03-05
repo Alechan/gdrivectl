@@ -186,6 +186,15 @@ CLOUDSDK_CONFIG=/tmp/gcloud-config gcloud auth list
 
 Then retry `doctor --json`.
 
+### Sandbox config-store escalation rule
+
+If a command returns exit `2` with config-store/auth-store signatures (for example `gcloud auth config store unavailable`), apply:
+
+1. keep least-privilege attempt as recorded first run
+2. preserve same command and arguments
+3. rerun unsandboxed/escalated
+4. record before/after outputs and exit codes
+
 ## Source fallback (contributors)
 
 If binary install is unavailable, run all checks from repo root using:

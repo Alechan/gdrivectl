@@ -68,6 +68,7 @@ Enhance token-provider classification:
 Add explicit runtime guidance:
 
 - if auth-class failures persist after re-auth in constrained environments, recommend unsandboxed/escalated retry and report this as environment limitation.
+- if config-class failures indicate gcloud auth/config-store access problems in constrained environments, recommend unsandboxed/escalated retry and report this as environment limitation.
 
 ### 4.5 Known-path fallback scan (rejected)
 
@@ -109,6 +110,7 @@ Reason:
 - `doctor` no longer shows false-negative `gcloud_exists` in normal PATH-resolved setups.
 - `GDRIVECTL_GCLOUD_BIN` behavior is implemented and documented.
 - Permission/config-store failures are reported as config/environment remediation, not generic auth.
+- Skill and runbook guidance explicitly include config-store-driven escalation criteria for exit `2`.
 - Tests cover precedence and new diagnostic classifications.
 - Documentation and skill guidance avoid claiming command-specific intrinsic auth sensitivity when root cause is shared token/runtime constraints.
 
