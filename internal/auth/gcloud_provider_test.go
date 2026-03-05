@@ -59,6 +59,13 @@ func TestAccessTokenGenericFailure(t *testing.T) {
 	assertFailCategory(t, err, "auth")
 }
 
+func TestAccessTokenConfigStorePermissionFailure(t *testing.T) {
+	bin := writeScript(t, `echo "Unable to create private file /Users/test/.config/gcloud/credentials.db: Permission denied" 1>&2; exit 1`)
+	p := NewGcloudTokenProvider(bin)
+	_, err := p.AccessToken(context.Background())
+	assertFailCategory(t, err, "config")
+}
+
 func TestAccessTokenEmptyOutput(t *testing.T) {
 	bin := writeScript(t, `:`)
 	p := NewGcloudTokenProvider(bin)

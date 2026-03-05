@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"os"
+	"os/exec"
 	"strings"
 	"time"
 
@@ -23,7 +25,12 @@ func Execute(args []string, stdout, stderr io.Writer) int {
 		return fail.CodeValidation
 	}
 
-	cfg := app.NewConfig(opts.gcloudBin, opts.timeout, opts.json, opts.debug)
+	resolvedBin, exists := resolveGcloudBin(opts.gcloudBin)
+	if exists {
+		opts.gcloudBin = resolvedBin
+	}
+
+	cfg := app.NewConfig(opts.gcloudBin, exists, opts.timeout, opts.json, opts.debug)
 	svcs := app.NewServices(cfg)
 	ctx, cancel := context.WithTimeout(context.Background(), cfg.Timeout)
 	defer cancel()
@@ -57,8 +64,12 @@ type rootOptions struct {
 }
 
 func parseRootArgs(args []string) (rootOptions, string, []string, error) {
+	gcloudBin := strings.TrimSpace(os.Getenv("GDRIVECTL_GCLOUD_BIN"))
+	if gcloudBin == "" {
+		gcloudBin = "gcloud"
+	}
 	opts := rootOptions{
-		gcloudBin: "gcloud",
+		gcloudBin: gcloudBin,
 		timeout:   20 * time.Second,
 	}
 	rest := make([]string, 0, len(args))
@@ -119,9 +130,22 @@ func printUsage(w io.Writer) {
 	fmt.Fprintln(w, "")
 	fmt.Fprintln(w, "Global flags:")
 	fmt.Fprintln(w, "  --gcloud-bin <path>  Path to gcloud binary")
+	fmt.Fprintln(w, "                         Env override: GDRIVECTL_GCLOUD_BIN")
 	fmt.Fprintln(w, "  --timeout <duration> Timeout per command (default 20s)")
 	fmt.Fprintln(w, "  --json               JSON output")
 	fmt.Fprintln(w, "  --debug              Debug logging")
+}
+
+func resolveGcloudBin(configured string) (string, bool) {
+	configured = strings.TrimSpace(configured)
+	if configured == "" {
+		return "", false
+	}
+	p, err := exec.LookPath(configured)
+	if err != nil {
+		return configured, false
+	}
+	return p, true
 }
 
 func writeError(w io.Writer, err error) {

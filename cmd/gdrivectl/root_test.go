@@ -3,6 +3,8 @@ package main
 import (
 	"bytes"
 	"errors"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -11,6 +13,7 @@ import (
 )
 
 func TestParseRootArgsDefaults(t *testing.T) {
+	t.Setenv("GDRIVECTL_GCLOUD_BIN", "")
 	opts, cmd, cmdArgs, err := parseRootArgs(nil)
 	if err != nil {
 		t.Fatalf("parseRootArgs() error = %v", err)
@@ -30,6 +33,58 @@ func TestParseRootArgsDefaults(t *testing.T) {
 	if opts.timeout != 20*time.Second {
 		t.Fatalf("timeout = %v, want %v", opts.timeout, 20*time.Second)
 	}
+}
+
+func TestParseRootArgsReadsEnvDefault(t *testing.T) {
+	t.Setenv("GDRIVECTL_GCLOUD_BIN", "/tmp/from-env-gcloud")
+	opts, _, _, err := parseRootArgs(nil)
+	if err != nil {
+		t.Fatalf("parseRootArgs() error = %v", err)
+	}
+	if opts.gcloudBin != "/tmp/from-env-gcloud" {
+		t.Fatalf("gcloudBin = %q, want env value", opts.gcloudBin)
+	}
+}
+
+func TestParseRootArgsFlagOverridesEnv(t *testing.T) {
+	t.Setenv("GDRIVECTL_GCLOUD_BIN", "/tmp/from-env-gcloud")
+	opts, cmd, _, err := parseRootArgs([]string{"--gcloud-bin", "/tmp/from-flag-gcloud", "doctor"})
+	if err != nil {
+		t.Fatalf("parseRootArgs() error = %v", err)
+	}
+	if cmd != "doctor" {
+		t.Fatalf("cmd = %q, want doctor", cmd)
+	}
+	if opts.gcloudBin != "/tmp/from-flag-gcloud" {
+		t.Fatalf("gcloudBin = %q, want flag value", opts.gcloudBin)
+	}
+}
+
+func TestResolveGcloudBin(t *testing.T) {
+	t.Run("resolves absolute executable path", func(t *testing.T) {
+		p := filepath.Join(t.TempDir(), "fake-gcloud.sh")
+		if err := os.WriteFile(p, []byte("#!/bin/sh\nexit 0\n"), 0o755); err != nil {
+			t.Fatalf("write script: %v", err)
+		}
+		resolved, ok := resolveGcloudBin(p)
+		if !ok {
+			t.Fatalf("resolveGcloudBin() ok = false, want true")
+		}
+		if resolved != p {
+			t.Fatalf("resolved = %q, want %q", resolved, p)
+		}
+	})
+
+	t.Run("missing executable", func(t *testing.T) {
+		p := filepath.Join(t.TempDir(), "missing-gcloud")
+		resolved, ok := resolveGcloudBin(p)
+		if ok {
+			t.Fatalf("resolveGcloudBin() ok = true, want false")
+		}
+		if resolved != p {
+			t.Fatalf("resolved = %q, want %q", resolved, p)
+		}
+	})
 }
 
 func TestParseRootArgsParsesGlobalFlags(t *testing.T) {

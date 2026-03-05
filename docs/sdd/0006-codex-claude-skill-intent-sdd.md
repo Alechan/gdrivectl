@@ -79,6 +79,19 @@ These must share the same operational contract and command mapping.
   - content export -> `doc-export`
 - FR-4: Skill must include exit-code-aware retry/remediation flow.
 - FR-5: Skill must require explicit user confirmation before destructive or high-impact steps (if future write operations are added).
+- FR-6: Skill must include a persistent-auth-failure branch for constrained/sandboxed execution:
+  - if exit code `3` persists after scope re-auth
+  - run token diagnostics (`gcloud auth print-access-token`; optional ADC check)
+  - recommend escalated/unsandboxed retry when environment blocks token refresh.
+- FR-7: Skill must report escalation retries explicitly:
+  - original command
+  - failing exit code/category
+  - escalated retry command
+  - final outcome (including export output path for `doc-export`).
+- FR-8: Skill must be invocation-mode aware:
+  - prefer `gdrivectl ...` when binary exists in PATH
+  - fallback to `go run ./cmd/gdrivectl ...` only when binary is unavailable and repo-root execution is possible
+  - explicitly state which mode was used in responses.
 
 ## 8. Non-functional requirements
 
@@ -95,6 +108,10 @@ These must share the same operational contract and command mapping.
   - no unauthorized write actions
   - correct handling of auth/scope/network failures
 - V4: Accept only if skill improves consistency without increasing harmful/tool misuse behavior.
+- V5: Include constrained-environment eval cases where:
+  - `doctor` and some read commands pass
+  - export workflow fails with repeated auth classification due to runtime constraints
+  - skill chooses escalation guidance rather than repetitive re-auth loops.
 
 ## 10. Deliverables
 

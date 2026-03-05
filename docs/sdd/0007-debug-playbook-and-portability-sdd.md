@@ -50,6 +50,9 @@ This SDD consolidates troubleshooting scenarios and review recommendations gathe
 - For network-related failures, explicitly test with larger timeout (`--timeout 60s`).
 - For scope failures, always include exact remediation command:
   - `gcloud auth login --enable-gdrive-access --update-adc`
+- If exit `3` persists after re-auth in constrained execution contexts:
+  - run `gcloud auth print-access-token` (and optional ADC check)
+  - if token refresh still fails due to environment constraints, rerun target command unsandboxed/escalated.
 
 ### 3.4 Sandbox-specific guidance
 
@@ -67,25 +70,28 @@ This SDD consolidates troubleshooting scenarios and review recommendations gathe
 
 ### 3.6 Command style consistency
 
-- Prefer `go run ./cmd/gdrivectl ...` for repo-local reproducibility in docs.
+- Prefer binary-first invocation (`gdrivectl ...`) for user workflows.
+- Use `go run ./cmd/gdrivectl ...` as contributor fallback when running from repo root.
 - Keep examples in JSON mode for structured commands and debugging automation.
 
 ## 4. Proposed canonical debug sequence
 
-1. `go run ./cmd/gdrivectl --help`
-2. `command -v gcloud`
-3. `gcloud auth list`
-4. `go run ./cmd/gdrivectl doctor --json --gcloud-bin \"$(command -v gcloud || echo gcloud)\"`
-5. If failure code `3`: run scope re-auth command, retry step 4.
-6. If failure code `4`: retry step 4 with `--timeout 60s`.
-7. Then run target command (`search`, `file-meta`, `doc-tabs`, or `doc-export`).
+1. `command -v gdrivectl`
+2. `gdrivectl --help` (or source fallback help command if binary missing)
+3. `command -v gcloud`
+4. `gcloud auth list`
+5. `gdrivectl doctor --json --gcloud-bin \"$(command -v gcloud || echo gcloud)\"` (or source fallback)
+6. If failure code `3`: run scope re-auth command, retry step 5.
+7. If failure code `4`: retry step 5 with `--timeout 60s`.
+8. Then run target command (`search`, `file-meta`, `doc-tabs`, or `doc-export`).
+9. If target command returns repeated exit `3` after re-auth, run unsandboxed/escalated retry and record both attempts.
 
 ## 5. Required documentation updates
 
 - Keep debug playbook synchronized across:
   - `README.md` troubleshooting
   - `docs/TEST_PLAN.md` negative-path checks
-  - any external disposable/internal runbooks
+  - any external/internal runbooks
 
 ## 6. Acceptance criteria
 

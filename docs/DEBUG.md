@@ -4,7 +4,14 @@ Use this playbook for common `gdrivectl` and `gcloud` failures.
 
 ## 1) `gdrivectl: command not found`
 
-Run from source:
+Install binary:
+
+```bash
+go install github.com/Alechan/gdrivectl/cmd/gdrivectl@latest
+command -v gdrivectl
+```
+
+If still unavailable, run from source as contributor fallback:
 
 ```bash
 cd <repo-root>
@@ -30,7 +37,7 @@ If not found, either:
 1. Use explicit path:
 
 ```bash
-go run ./cmd/gdrivectl doctor --json --gcloud-bin "$HOME/.local/google-cloud-sdk/bin/gcloud"
+gdrivectl doctor --json --gcloud-bin "$HOME/.local/google-cloud-sdk/bin/gcloud"
 ```
 
 2. Or add a PATH-visible symlink:
@@ -52,7 +59,7 @@ gcloud auth list
 Retry:
 
 ```bash
-go run ./cmd/gdrivectl doctor --json
+gdrivectl doctor --json
 ```
 
 ## 4) Sandbox/permission issue with gcloud config
@@ -83,9 +90,16 @@ A healthy output should include:
 ## 6) Canonical debug sequence
 
 ```bash
-go run ./cmd/gdrivectl --help
+command -v gdrivectl
+gdrivectl --help
 command -v gcloud
 gcloud auth list
+gdrivectl doctor --json --gcloud-bin "$(command -v gcloud || echo gcloud)"
+```
+
+Source fallback if binary is missing:
+
+```bash
 go run ./cmd/gdrivectl doctor --json --gcloud-bin "$(command -v gcloud || echo gcloud)"
 ```
 
@@ -98,7 +112,7 @@ If exit code is:
 
 ```bash
 command -v gcloud \
-&& go run ./cmd/gdrivectl doctor --json --gcloud-bin "$(command -v gcloud)"
+&& gdrivectl doctor --json --gcloud-bin "$(command -v gcloud)"
 ```
 
 ## 8) Exit code map

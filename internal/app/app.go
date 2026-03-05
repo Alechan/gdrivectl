@@ -25,7 +25,7 @@ func NewServices(cfg Config) Services {
 	docsClient := googleapi.NewDocsClient(httpClient)
 
 	return Services{
-		Doctor:    service.NewDoctorService(cfg.GcloudBin, tokenProvider, driveClient, docsClient),
+		Doctor:    service.NewDoctorService(cfg.GcloudBin, cfg.GcloudExists, tokenProvider, driveClient, docsClient),
 		Search:    service.NewSearchService(tokenProvider, driveClient),
 		FileMeta:  service.NewFileMetaService(tokenProvider, driveClient),
 		DocTabs:   service.NewDocTabsService(tokenProvider, docsClient),

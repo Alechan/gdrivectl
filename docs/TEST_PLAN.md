@@ -19,12 +19,22 @@ go build ./...
 
 Expected: exits `0`.
 
+## Install verification (recommended user mode)
+
+```bash
+go install github.com/Alechan/gdrivectl/cmd/gdrivectl@latest
+command -v gdrivectl
+gdrivectl --help
+```
+
+Expected: binary resolves and help exits `0`.
+
 ## Smoke checks
 
 ### 1) Help
 
 ```bash
-go run ./cmd/gdrivectl --help
+gdrivectl --help
 ```
 
 Expected: usage and command list printed, exit `0`.
@@ -32,7 +42,7 @@ Expected: usage and command list printed, exit `0`.
 ### 2) Doctor
 
 ```bash
-go run ./cmd/gdrivectl doctor --gcloud-bin gcloud --timeout 10s
+gdrivectl doctor --gcloud-bin gcloud --timeout 10s
 ```
 
 Expected:
@@ -45,7 +55,7 @@ Expected:
 ### 2b) Doctor JSON mode
 
 ```bash
-go run ./cmd/gdrivectl doctor --json
+gdrivectl doctor --json
 ```
 
 Expected: JSON object with `gcloud_bin`, `token_ok`, `drive_ok`, and `docs_ok`.
@@ -53,7 +63,7 @@ Expected: JSON object with `gcloud_bin`, `token_ok`, `drive_ok`, and `docs_ok`.
 ### 3) File metadata
 
 ```bash
-go run ./cmd/gdrivectl file-meta --id <FILE_ID> --json
+gdrivectl file-meta --id <FILE_ID> --json
 ```
 
 Expected: JSON with `id`, `name`, `mimeType`.
@@ -61,7 +71,7 @@ Expected: JSON with `id`, `name`, `mimeType`.
 ### 4) Drive search
 
 ```bash
-go run ./cmd/gdrivectl search --query "name contains 'RFC'" --page-size 5 --json
+gdrivectl search --query "name contains 'RFC'" --page-size 5 --json
 ```
 
 Expected: JSON containing `files` array.
@@ -69,7 +79,7 @@ Expected: JSON containing `files` array.
 ### 5) Docs tabs
 
 ```bash
-go run ./cmd/gdrivectl doc-tabs --id <DOC_ID> --json
+gdrivectl doc-tabs --id <DOC_ID> --json
 ```
 
 Expected: JSON containing `tabs` with `tabProperties`.
@@ -77,7 +87,7 @@ Expected: JSON containing `tabs` with `tabProperties`.
 ### 6) Docs export
 
 ```bash
-go run ./cmd/gdrivectl doc-export --id <DOC_ID> --mime text/plain --out /tmp/doc.txt
+gdrivectl doc-export --id <DOC_ID> --mime text/plain --out /tmp/doc.txt
 ```
 
 Expected: `/tmp/doc.txt` created and non-empty.
@@ -93,7 +103,7 @@ Expected: `/tmp/doc.txt` created and non-empty.
 ### Missing required flag
 
 ```bash
-go run ./cmd/gdrivectl file-meta
+gdrivectl file-meta
 ```
 
 Expected: validation error, exit `2`.
@@ -101,7 +111,7 @@ Expected: validation error, exit `2`.
 ### Invalid gcloud path
 
 ```bash
-go run ./cmd/gdrivectl doctor --gcloud-bin /invalid/gcloud
+gdrivectl doctor --gcloud-bin /invalid/gcloud
 ```
 
 Expected: config/auth error with action hint, exit `2` or `3`.
@@ -109,7 +119,7 @@ Expected: config/auth error with action hint, exit `2` or `3`.
 ### Timeout behavior
 
 ```bash
-go run ./cmd/gdrivectl doc-tabs --id <DOC_ID> --timeout 1ms
+gdrivectl doc-tabs --id <DOC_ID> --timeout 1ms
 ```
 
 Expected: network timeout category, exit `4`.
@@ -153,10 +163,11 @@ Optional env overrides:
 ### Canonical sequence
 
 ```bash
-go run ./cmd/gdrivectl --help
+command -v gdrivectl
+gdrivectl --help
 command -v gcloud
 gcloud auth list
-go run ./cmd/gdrivectl doctor --json --gcloud-bin "$(command -v gcloud || echo gcloud)"
+gdrivectl doctor --json --gcloud-bin "$(command -v gcloud || echo gcloud)"
 ```
 
 Expected:
@@ -174,3 +185,11 @@ CLOUDSDK_CONFIG=/tmp/gcloud-config gcloud auth list
 ```
 
 Then retry `doctor --json`.
+
+## Source fallback (contributors)
+
+If binary install is unavailable, run all checks from repo root using:
+
+```bash
+go run ./cmd/gdrivectl <command> ...
+```

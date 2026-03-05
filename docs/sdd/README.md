@@ -7,3 +7,5 @@
 - `0005-v0-1-fixture-contract-tests-sdd.md`: Fixture-based contract test requirements for Drive/Docs clients.
 - `0006-codex-claude-skill-intent-sdd.md`: Intent and architecture for a reusable Codex/Claude skill/subagent around `gdrivectl`.
 - `0007-debug-playbook-and-portability-sdd.md`: Debug playbook requirements derived from existing cheatsheet plus portability/accuracy improvements.
+- `0008-auth-resolution-and-diagnostics-sdd.md`: Auth/binary-resolution hardening plan, doctor reporting fixes, and error-classification decisions.
+- `0009-distribution-and-invocation-strategy-sdd.md`: Binary-first install/invocation policy with source fallback for contributors.

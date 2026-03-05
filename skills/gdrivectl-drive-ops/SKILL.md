@@ -20,11 +20,16 @@ Use this skill for Drive/Docs reads via `gdrivectl`.
 ## Preconditions
 
 - `gcloud` installed and authenticated.
+- prefer installed binary mode:
+  - `command -v gdrivectl`
 - If scope issues appear, run:
   - `gcloud auth login --enable-gdrive-access --update-adc`
 
 ## Command map
 
+- Invocation mode:
+  - binary-first: `gdrivectl ...`
+  - source fallback (contributors): `go run ./cmd/gdrivectl ...` from gdrivectl repo root
 - Environment preflight: `gdrivectl doctor [--json]`
 - Drive search: `gdrivectl search --query <q> [--page-size N] [--json]`
 - File metadata: `gdrivectl file-meta --id <FILE_ID> [--json]`
@@ -44,6 +49,10 @@ Use `--json` by default for structured commands. For `doctor`, prefer `--json` w
 
 - `2` (`validation/config`): fix flags or `--gcloud-bin` path.
 - `3` (`auth/scope`): re-authenticate and ensure Drive scope.
+  - Run: `gcloud auth login --enable-gdrive-access --update-adc`
+  - If it persists, run: `gcloud auth print-access-token`
+  - Optional diagnostic: `gcloud auth application-default print-access-token`
+  - If token diagnostics still fail due to sandbox/network/config-store constraints, rerun the target `gdrivectl` command with escalated/unsandboxed execution.
 - `4` (`network`): retry with larger timeout (for example `--timeout 60s`) and verify connectivity.
 - `5` (`api`): validate IDs/query/mime/access.
 
@@ -57,5 +66,11 @@ Use `--json` by default for structured commands. For `doctor`, prefer `--json` w
 ## Response style
 
 - Provide exact command(s) run.
+- State invocation mode used (`binary` or `source fallback`).
 - Summarize key output fields only.
 - Include next remediation step when command fails.
+- For escalated retries, always report:
+  - original command
+  - failing exit code/category
+  - escalated retry command
+  - final outcome and output path (for `doc-export`)

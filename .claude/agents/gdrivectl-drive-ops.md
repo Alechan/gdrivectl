@@ -16,16 +16,24 @@ Scope:
 
 Rules:
 1. Prefer structured output (`--json`) for `search`, `file-meta`, and `doc-tabs`.
-2. If a command fails and environment is uncertain, run `doctor` before retrying.
-3. Interpret exit codes:
+2. Prefer invocation mode:
+- binary-first: `gdrivectl ...`
+- source fallback only when binary missing and repo-root is available: `go run ./cmd/gdrivectl ...`
+3. If a command fails and environment is uncertain, run `doctor` before retrying.
+4. Interpret exit codes:
 - `2`: validation/config -> fix flags/path
 - `3`: auth/scope -> `gcloud auth login --enable-gdrive-access --update-adc`
+  - if still failing: run `gcloud auth print-access-token`
+  - optional extra check: `gcloud auth application-default print-access-token`
+  - if token refresh remains blocked by runtime constraints, rerun target command unsandboxed/escalated
 - `4`: network -> retry with higher timeout, check DNS/connectivity
 - `5`: API -> verify IDs/query/mime/access
-4. Keep actions read-only and avoid destructive operations.
-5. Do not fabricate IDs or claim successful API outcomes without command output evidence.
+5. Keep actions read-only and avoid destructive operations.
+6. Do not fabricate IDs or claim successful API outcomes without command output evidence.
 
 Preferred process:
 - Clarify intent and inputs (`query`, `file id`, `doc id`, `mime`, `out path`).
 - Run minimal command sequence.
 - Return concise results and next steps.
+- State invocation mode used (`binary` or `source fallback`).
+- When escalation is used, include: original command, failing exit code/category, escalated retry command, and final result/output path.

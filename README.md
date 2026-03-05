@@ -8,7 +8,22 @@
 go build ./...
 ```
 
-## Quickstart
+## Install (recommended)
+
+```bash
+go install github.com/Alechan/gdrivectl/cmd/gdrivectl@latest
+```
+
+Verify:
+
+```bash
+command -v gdrivectl
+gdrivectl --help
+```
+
+If `gdrivectl` is not found, ensure `$(go env GOPATH)/bin` is in your PATH.
+
+## Quickstart (binary-first)
 
 Authenticate with Drive scope first:
 
@@ -25,31 +40,39 @@ GCLOUD=gcloud
 Doctor check:
 
 ```bash
-go run ./cmd/gdrivectl doctor --gcloud-bin "$GCLOUD"
+gdrivectl doctor --gcloud-bin "$GCLOUD"
 ```
 
 Search:
 
 ```bash
-go run ./cmd/gdrivectl search --query "name contains 'RFC'" --page-size 5 --json
+gdrivectl search --query "name contains 'RFC'" --page-size 5 --json
 ```
 
 File metadata:
 
 ```bash
-go run ./cmd/gdrivectl file-meta --id <FILE_ID> --json
+gdrivectl file-meta --id <FILE_ID> --json
 ```
 
 Doc tabs:
 
 ```bash
-go run ./cmd/gdrivectl doc-tabs --id <DOC_ID> --json
+gdrivectl doc-tabs --id <DOC_ID> --json
 ```
 
 Doc export:
 
 ```bash
-go run ./cmd/gdrivectl doc-export --id <DOC_ID> --mime text/plain --out /tmp/doc.txt
+gdrivectl doc-export --id <DOC_ID> --mime text/plain --out /tmp/doc.txt
+```
+
+## Quickstart (source fallback for contributors)
+
+If binary install is unavailable, run from repository root:
+
+```bash
+go run ./cmd/gdrivectl --help
 ```
 
 Optional end-to-end smoke harness:
@@ -69,6 +92,7 @@ GDRIVECTL_FILE_ID=<FILE_ID> GDRIVECTL_DOC_ID=<DOC_ID> scripts/smoke_integration.
 ## Global flags
 
 - `--gcloud-bin <path>`: gcloud binary path.
+  - env override: `GDRIVECTL_GCLOUD_BIN`
 - `--timeout <duration>`: per-command timeout (default `20s`).
 - `--json`: JSON output for structured commands; `doctor` switches from text to JSON.
 - `--debug`: enable debug logging.
@@ -116,9 +140,16 @@ GDRIVECTL_FILE_ID=<FILE_ID> GDRIVECTL_DOC_ID=<DOC_ID> scripts/smoke_integration.
 ### Canonical debug sequence
 
 ```bash
-go run ./cmd/gdrivectl --help
+command -v gdrivectl
+gdrivectl --help
 command -v gcloud
 gcloud auth list
+gdrivectl doctor --json --gcloud-bin "$(command -v gcloud || echo gcloud)"
+```
+
+If `gdrivectl` is not installed, use source fallback from repo root:
+
+```bash
 go run ./cmd/gdrivectl doctor --json --gcloud-bin "$(command -v gcloud || echo gcloud)"
 ```
 

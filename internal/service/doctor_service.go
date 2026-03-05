@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"os"
 
 	"github.com/Alechan/gdrivectl/internal/auth"
 	"github.com/Alechan/gdrivectl/internal/googleapi"
@@ -19,20 +18,18 @@ type DoctorReport struct {
 
 type DoctorService struct {
 	gcloudBin string
+	hasGcloud bool
 	tokens    auth.TokenProvider
 	drive     googleapi.DriveClient
 	docs      googleapi.DocsClient
 }
 
-func NewDoctorService(gcloudBin string, tokens auth.TokenProvider, drive googleapi.DriveClient, docs googleapi.DocsClient) *DoctorService {
-	return &DoctorService{gcloudBin: gcloudBin, tokens: tokens, drive: drive, docs: docs}
+func NewDoctorService(gcloudBin string, hasGcloud bool, tokens auth.TokenProvider, drive googleapi.DriveClient, docs googleapi.DocsClient) *DoctorService {
+	return &DoctorService{gcloudBin: gcloudBin, hasGcloud: hasGcloud, tokens: tokens, drive: drive, docs: docs}
 }
 
 func (s *DoctorService) Run(ctx context.Context) (DoctorReport, error) {
-	r := DoctorReport{GcloudBin: s.gcloudBin}
-	if _, err := os.Stat(s.gcloudBin); err == nil {
-		r.GcloudExists = true
-	}
+	r := DoctorReport{GcloudBin: s.gcloudBin, GcloudExists: s.hasGcloud}
 	token, err := s.tokens.AccessToken(ctx)
 	if err != nil {
 		return r, err
