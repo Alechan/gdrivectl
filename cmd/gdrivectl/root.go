@@ -46,11 +46,13 @@ func Execute(args []string, stdout, stderr io.Writer) int {
 		return runDocTabsCmd(ctx, svcs, cfg, cmdArgs, stdout, stderr)
 	case "doc-export":
 		return runDocExportCmd(ctx, svcs, cfg, cmdArgs, stdout, stderr)
+	case "upload":
+		return runUploadCmd(ctx, svcs, cfg, cmdArgs, stdout, stderr)
 	case "help", "--help", "-h":
 		printUsage(stdout)
 		return fail.CodeOK
 	default:
-		err := fail.NewValidation("unknown command", "use one of: doctor, search, file-meta, doc-tabs, doc-export")
+		err := fail.NewValidation("unknown command", "use one of: doctor, search, file-meta, doc-tabs, doc-export, upload")
 		writeError(stderr, err)
 		return fail.ExitCode(err)
 	}
@@ -127,6 +129,7 @@ func printUsage(w io.Writer) {
 	fmt.Fprintln(w, "  file-meta   Get metadata for a file")
 	fmt.Fprintln(w, "  doc-tabs    List tabs of a Google Doc")
 	fmt.Fprintln(w, "  doc-export  Export a Google Doc")
+	fmt.Fprintln(w, "  upload      Upload a local file to Google Drive")
 	fmt.Fprintln(w, "")
 	fmt.Fprintln(w, "Global flags:")
 	fmt.Fprintln(w, "  --gcloud-bin <path>  Path to gcloud binary")

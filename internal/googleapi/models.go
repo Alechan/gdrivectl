@@ -21,3 +21,11 @@ type ExportRequest struct {
 type DocTabsRequest struct {
 	ID string
 }
+
+type UploadRequest struct {
+	Name     string
+	ParentID string
+	MIME     string
+	Fields   string
+	Content  []byte
+}

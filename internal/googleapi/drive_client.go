@@ -1,11 +1,14 @@
 package googleapi
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	"io"
+	"mime/multipart"
 	"net/http"
+	"net/textproto"
 	"net/url"
 	"strconv"
 
@@ -17,6 +20,7 @@ type DriveClient interface {
 	Search(ctx context.Context, token string, req SearchRequest) (map[string]any, error)
 	FileMeta(ctx context.Context, token string, req FileMetaRequest) (map[string]any, error)
 	ExportDoc(ctx context.Context, token string, req ExportRequest) ([]byte, error)
+	Upload(ctx context.Context, token string, req UploadRequest) (map[string]any, error)
 }
 
 type DriveHTTPClient struct {
@@ -146,4 +150,77 @@ func (c *DriveHTTPClient) ExportDoc(ctx context.Context, token string, req Expor
 		return nil, fail.NewAPI(fmt.Sprintf("doc-export failed with status %d", resp.StatusCode), "verify document id/mime type", string(b))
 	}
 	return b, nil
+}
+
+func (c *DriveHTTPClient) Upload(ctx context.Context, token string, req UploadRequest) (map[string]any, error) {
+	v := url.Values{}
+	v.Set("uploadType", "multipart")
+	v.Set("supportsAllDrives", "true")
+	if req.Fields != "" {
+		v.Set("fields", req.Fields)
+	}
+	u := "https://www.googleapis.com/upload/drive/v3/files?" + v.Encode()
+
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+
+	meta := map[string]any{
+		"name": req.Name,
+	}
+	if req.ParentID != "" {
+		meta["parents"] = []string{req.ParentID}
+	}
+	metaBytes, err := json.Marshal(meta)
+	if err != nil {
+		return nil, fail.NewAPI("failed to encode upload metadata", "retry with --debug", err.Error())
+	}
+
+	metaHeader := textproto.MIMEHeader{}
+	metaHeader.Set("Content-Type", "application/json; charset=UTF-8")
+	metaPart, err := writer.CreatePart(metaHeader)
+	if err != nil {
+		return nil, fail.NewAPI("failed to build upload metadata part", "retry with --debug", err.Error())
+	}
+	if _, err := metaPart.Write(metaBytes); err != nil {
+		return nil, fail.NewAPI("failed to write upload metadata part", "retry with --debug", err.Error())
+	}
+
+	mediaHeader := textproto.MIMEHeader{}
+	mediaHeader.Set("Content-Type", req.MIME)
+	mediaPart, err := writer.CreatePart(mediaHeader)
+	if err != nil {
+		return nil, fail.NewAPI("failed to build upload media part", "retry with --debug", err.Error())
+	}
+	if _, err := mediaPart.Write(req.Content); err != nil {
+		return nil, fail.NewAPI("failed to write upload media part", "retry with --debug", err.Error())
+	}
+	if err := writer.Close(); err != nil {
+		return nil, fail.NewAPI("failed to finalize upload body", "retry with --debug", err.Error())
+	}
+
+	reqHTTP, _ := http.NewRequestWithContext(ctx, http.MethodPost, u, body)
+	reqHTTP.Header.Set("Authorization", "Bearer "+token)
+	reqHTTP.Header.Set("Content-Type", "multipart/related; boundary="+writer.Boundary())
+
+	resp, err := c.http.Do(reqHTTP)
+	if err != nil {
+		return nil, fail.MapNetworkOrAPI(err)
+	}
+	defer resp.Body.Close()
+	b, _ := io.ReadAll(resp.Body)
+	if resp.StatusCode >= 300 {
+		if resp.StatusCode == http.StatusUnauthorized {
+			return nil, fail.NewAuth("upload unauthorized", "run gcloud auth login")
+		}
+		if resp.StatusCode == http.StatusForbidden {
+			return nil, fail.NewScope("upload forbidden", "run: gcloud auth login --enable-gdrive-access --update-adc")
+		}
+		return nil, fail.NewAPI(fmt.Sprintf("upload failed with status %d", resp.StatusCode), "verify upload path, parent folder id, and access", string(b))
+	}
+
+	var out map[string]any
+	if err := json.Unmarshal(b, &out); err != nil {
+		return nil, fail.NewAPI("failed to parse upload response", "retry with --debug", err.Error())
+	}
+	return out, nil
 }

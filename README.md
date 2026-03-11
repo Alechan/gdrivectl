@@ -67,6 +67,12 @@ Doc export:
 gdrivectl doc-export --id <DOC_ID> --mime text/plain --out /tmp/doc.txt
 ```
 
+Upload local file:
+
+```bash
+gdrivectl upload --path ./notes.txt --parent-id <FOLDER_ID> --json
+```
+
 ## Quickstart (source fallback for contributors)
 
 If binary install is unavailable, run from repository root:
@@ -88,6 +94,7 @@ GDRIVECTL_FILE_ID=<FILE_ID> GDRIVECTL_DOC_ID=<DOC_ID> scripts/smoke_integration.
 - `file-meta`: Read metadata by file id.
 - `doc-tabs`: Read Google Docs tabs metadata.
 - `doc-export`: Export a Google Doc to a MIME type.
+- `upload`: Upload a local file to Google Drive.
 
 ## Global flags
 
@@ -99,7 +106,7 @@ GDRIVECTL_FILE_ID=<FILE_ID> GDRIVECTL_DOC_ID=<DOC_ID> scripts/smoke_integration.
 
 ## Output contract (v0.1)
 
-- `search`, `file-meta`, `doc-tabs`: JSON payload on success.
+- `search`, `file-meta`, `doc-tabs`, `upload`: JSON payload on success.
 - `doctor`: text by default, JSON with `--json`.
 - `doc-export`: raw bytes to stdout or `--out`; no JSON envelope on success.
 - Errors are emitted to `stderr` with category and action hint when available.

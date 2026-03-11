@@ -92,9 +92,18 @@ gdrivectl doc-export --id <DOC_ID> --mime text/plain --out /tmp/doc.txt
 
 Expected: `/tmp/doc.txt` created and non-empty.
 
-### 7) Output contract consistency
+### 7) Upload local file
 
-- `search`, `file-meta`, `doc-tabs` return JSON success payloads.
+```bash
+echo "hello from gdrivectl" > /tmp/gdrivectl-upload.txt
+gdrivectl upload --path /tmp/gdrivectl-upload.txt --parent-id <FOLDER_ID> --json
+```
+
+Expected: JSON object with uploaded file `id` and `name`.
+
+### 8) Output contract consistency
+
+- `search`, `file-meta`, `doc-tabs`, `upload` return JSON success payloads.
 - `doctor` returns text by default and JSON with `--json`.
 - `doc-export` writes raw bytes and does not print status text on success.
 
@@ -104,6 +113,14 @@ Expected: `/tmp/doc.txt` created and non-empty.
 
 ```bash
 gdrivectl file-meta
+```
+
+Expected: validation error, exit `2`.
+
+### Upload invalid path
+
+```bash
+gdrivectl upload --path /tmp/does-not-exist.txt --json
 ```
 
 Expected: validation error, exit `2`.

@@ -31,6 +31,9 @@ func (f fakeDriveClient) FileMeta(context.Context, string, googleapi.FileMetaReq
 func (f fakeDriveClient) ExportDoc(context.Context, string, googleapi.ExportRequest) ([]byte, error) {
 	return nil, errors.New("not implemented")
 }
+func (f fakeDriveClient) Upload(context.Context, string, googleapi.UploadRequest) (map[string]any, error) {
+	return nil, errors.New("not implemented")
+}
 
 type fakeDocsClient struct {
 	err error

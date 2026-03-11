@@ -9,3 +9,4 @@
 - `0007-debug-playbook-and-portability-sdd.md`: Debug playbook requirements derived from existing cheatsheet plus portability/accuracy improvements.
 - `0008-auth-resolution-and-diagnostics-sdd.md`: Auth/binary-resolution hardening plan, doctor reporting fixes, and error-classification decisions.
 - `0009-distribution-and-invocation-strategy-sdd.md`: Binary-first install/invocation policy with source fallback for contributors.
+- `0010-drive-upload-command-sdd.md`: Design and delivery plan for local file upload support via `gdrivectl upload`.

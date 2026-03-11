@@ -15,6 +15,7 @@ type Services struct {
 	FileMeta  *service.FileMetaService
 	DocTabs   *service.DocTabsService
 	DocExport *service.DocExportService
+	Upload    *service.UploadService
 	Output    *output.Writer
 }
 
@@ -30,6 +31,7 @@ func NewServices(cfg Config) Services {
 		FileMeta:  service.NewFileMetaService(tokenProvider, driveClient),
 		DocTabs:   service.NewDocTabsService(tokenProvider, docsClient),
 		DocExport: service.NewDocExportService(tokenProvider, driveClient),
+		Upload:    service.NewUploadService(tokenProvider, driveClient),
 		Output:    output.NewWriter(),
 	}
 }

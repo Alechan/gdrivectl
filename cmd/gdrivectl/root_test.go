@@ -172,6 +172,7 @@ func TestExecuteValidationErrorsForRequiredFlags(t *testing.T) {
 		{name: "file-meta missing id", args: []string{"file-meta"}, wantInStderr: "missing --id"},
 		{name: "doc-tabs missing id", args: []string{"doc-tabs"}, wantInStderr: "missing --id"},
 		{name: "doc-export missing required flags", args: []string{"doc-export"}, wantInStderr: "missing required flags"},
+		{name: "upload missing path", args: []string{"upload"}, wantInStderr: "missing --path"},
 	}
 
 	for _, tt := range tests {
